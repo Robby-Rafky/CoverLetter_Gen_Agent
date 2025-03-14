@@ -1,0 +1,6 @@
+langchain
+langchain-openai
+together
+python-dotenv
+pydantic
+customtkinter
