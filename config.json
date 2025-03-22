@@ -1,0 +1,45 @@
+{
+    "Main" : {
+        "size_x" : 500,
+        "size_y" : 1000,
+        "title" : "Cover Letter Generator"
+    },
+    "TabView" : {
+        "size_x" : 450,
+        "size_y" : 610,
+        "pos_x" : 25,
+        "pos_y" : 365
+    },
+    "EntryList" : {
+        "size_x" : 250,
+        "size_y" : 25,
+        "pos_x" : 20,
+        "pos_y" : 10
+    },
+    "Response" : {
+        "size_x" : 470,
+        "size_y" : 930,
+        "pos_x" : 15,
+        "pos_y" : 960
+    },
+    "ToggleBox" : {
+        "size_x" : 397,
+        "size_y" : 120,
+        "pos_x" : 19,
+        "pos_y" : 40
+    },
+    "ToggleBoxButton" : {
+        "size_x" : 50,
+        "size_y" : 25,
+        "pos_x" : 365
+    },
+    "Colours" : {
+        "green" : "#1ab015",
+        "dark_green" : "#051f04",
+        "red" : "#911111",
+        "dark_red" : "#210303",
+        "blue" : "#24396e",
+        "dark_blue" : "#0a1121",
+        "black" : "#000000"
+    }
+}
