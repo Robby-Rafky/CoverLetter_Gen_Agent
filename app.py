@@ -35,7 +35,17 @@ agent = CoverLetterAgent()
 
 
 class CoverGenWindow(ctk.CTk):
+    """
+    Main application window for the cover letter generator.
+    """
+
     def __init__(self):
+        """
+        Initialize the CoverGenWindow, configure GUI components, and set
+        layout.
+
+        Sets window title, dimensions, creates tabs, input boxes, and buttons.
+        """
         super().__init__()
 
         (
@@ -80,6 +90,13 @@ class CoverGenWindow(ctk.CTk):
         self.input_box.place(x=cfg_tab["pos_x"], y=cfg_tab["pos_x"])
 
     def generate_response(self):
+        """
+        Generate a cover letter response based on user input.
+
+        Retrieves the job posting from the input box, initiates a loading
+        animation, disables the button, and starts a thread to generate a
+        response.
+        """
         job_posting = self.input_box.get("1.0", "end").strip()
 
         self.animate_dots(0)
@@ -89,10 +106,24 @@ class CoverGenWindow(ctk.CTk):
                          args=(job_posting,)).start()
 
     def _generate_response_thread(self, job_posting):
+        """
+        Run the cover letter generation in a separate thread.
+
+        Args:
+            job_posting (str): The job posting description to use for
+                               generating the cover letter.
+        """
         response = agent.generate_cover_letter(job_posting)
         self.after(0, self.display_response, response)
 
     def animate_dots(self, step):
+        """
+        Animate a rotating line on the generate button while waiting for a
+        response.
+
+        Args:
+            step (int): The current frame of the animation (0-3).
+        """
         line_frames = ["|", "/", "—", "\\"]
         self.gen_button.configure(
             text=f" {line_frames[step]} Generating {line_frames[step]}")
@@ -101,6 +132,15 @@ class CoverGenWindow(ctk.CTk):
         self.dot_animation = self.after(100, self.animate_dots, next_step)
 
     def display_response(self, response):
+        """
+        Display the generated cover letter in a new window.
+
+        Cancels the loading animation, resets the button, and opens a window
+        displaying the response with options to save or copy.
+
+        Args:
+            response (str): The generated cover letter or an error message.
+        """
         self.after_cancel(self.dot_animation)
         self.gen_button.configure(text="Generate Response", state="normal")
 
@@ -152,6 +192,12 @@ class CoverGenWindow(ctk.CTk):
             self.win_result.focus_force()
 
     def save_to_file(self):
+        """
+        Save the generated cover letter to a file.
+
+        Opens a file dialog to select a save location and writes the text
+        from the response window to a .txt file.
+        """
         file_path = filedialog.asksaveasfilename(
             parent=self.win_result,
             defaultextension=".txt",
@@ -163,6 +209,12 @@ class CoverGenWindow(ctk.CTk):
                 save_file.write(self.window_text.get("1.0", "end").strip())
 
     def copy_to_clipboard(self):
+        """
+        Copy the generated cover letter to the system clipboard.
+
+        Changes button text to indicate success and restores the original
+        button text after a delay.
+        """
         self.copy_button.configure(text="Copied")
         self.copy_button.after(
             2500, lambda: self.copy_button.configure(text="Copy to Clipboard")
@@ -173,7 +225,18 @@ class CoverGenWindow(ctk.CTk):
 
 
 class TabView(ctk.CTkTabview):
+    """
+    Tab view that organizes and manages multiple tabs for input data.
+    """
     def __init__(self, master, **kwargs):
+        """
+        Initialize the TabView and add tabs for different types of applicant
+        data.
+
+        Args:
+            master: Parent widget where the tab view will be placed.
+            **kwargs: Additional keyword arguments passed to the parent class.
+        """
         super().__init__(master, **kwargs)
 
         self.add("Skills")
@@ -207,16 +270,32 @@ class TabView(ctk.CTkTabview):
         )
 
     def bind(self, *args, **kwargs):
-        # blank overwrite
-        pass
+        """
+        Disable binding to prevent unwanted interactions.
+        """
+        return
 
     def unbind(self, *args, **kwargs):
-        # blank overwrite
-        pass
+        """
+        Disable unbinding to prevent unwanted interactions.
+        """
+        return
 
 
 class Tab:
+    """
+    Tab for managing and editing applicant data with dynamic entry fields.
+    """
     def __init__(self, master, dict_ref, box_num=0):
+        """
+        Initialize the Tab and create input fields and buttons.
+        Always creates title box and upto 3 extra fields based on box_num.
+
+        Args:
+            master: Parent widget where the tab will be placed.
+            dict_ref (dict): Dictionary reference containing applicant data.
+            box_num (int): Number of additional editable boxes to display.
+        """
         self.master_ref = master
         self.data = dict_ref
         self.desc_boxes = []
@@ -266,6 +345,12 @@ class Tab:
             self.update_details(list(self.data.keys())[1])
 
     def update_details(self, choice):
+        """
+        Update tab details when a new entry is selected.
+
+        Args:
+            choice (str): The selected entry from the dropdown.
+        """
         choice_data = []
         self.desc_boxes[0].update_box(text=choice)
         if self.data["__Formatting"] is not None:
@@ -277,6 +362,13 @@ class Tab:
             box.update_box(text=data)
 
     def add_new_entry(self):
+        """
+        Add a new entry to the data dictionary and update the dropdown.
+        This also handles the different dict formats
+
+        Opens a dialog to get the name of the new entry and updates the entry
+        list.
+        """
         new_entry_dialog = ctk.CTkInputDialog(text=" ", title="Add New Entry")
         new_entry = new_entry_dialog.get_input()
 
@@ -289,12 +381,21 @@ class Tab:
             self.update_entry_list(new_entry=new_entry)
 
     def update_entry_list(self, new_entry=None):
+        """
+        Update the dropdown values and optionally select a newly added entry.
+
+        Args:
+            new_entry (str, optional): The name of the newly added entry.
+        """
         self.entry_list.configure(values=list(self.data.keys())[1:])
         if new_entry is not None:
             self.entry_list.set(new_entry)
             self.update_details(new_entry)
 
     def save_new_entries(self):
+        """
+        Save updated data entries to the corresponding JSON file.
+        """
         tab_name = self.master_ref.master.get()
         with open(f"applicant data/{tab_name}.json", "w",
                   encoding="utf-8") as save_file:
@@ -302,8 +403,25 @@ class Tab:
 
 
 class ToggleEditBox:
+    """
+    A text box with editable and non-editable states for modifying entries.
+    """
     def __init__(self, master, combo_box_ref,
                  dict_ref, y_offset=0, title="", del_button=False):
+        """
+        Initialize the ToggleEditBox with editing capabilities and a button
+        to switch between editing states.
+
+        Optionally adds a delete button paired with the field.
+
+        Args:
+            master: Parent widget where the box is placed.
+            combo_box_ref: Reference to the associated dropdown list.
+            dict_ref (dict): Reference to the data dictionary.
+            y_offset (int): Vertical offset for widget placement.
+            title (str): Title label for the box.
+            del_button (bool): Whether to add a delete button.
+        """
         self.master_ref = master
         self.combo_box_ref = combo_box_ref
         self.dict_ref = dict_ref
@@ -355,6 +473,12 @@ class ToggleEditBox:
         self.text_box.configure(state="disabled")
 
     def delete_entry(self):
+        """
+        Delete the selected entry after user confirmation.
+
+        Prompts the user with a confirmation dialog and removes the selected
+        entry from the data dictionary if confirmed.
+        """
         confirmation = ctk.CTkInputDialog(
             text="Type 'Yes' to confirm deletion",
             title="Delete Entry?"
@@ -367,6 +491,14 @@ class ToggleEditBox:
             self.update_box(text="Select or create a new entry.")
 
     def toggle_edit(self):
+        """
+        Toggle between editable and non-editable states.
+
+        Saves changes made to the text box and updates the data dictionary
+        when switching back to non-editable mode.
+
+        Also handles the different formats of the various dictionaries.
+        """
         if self.is_editing:
             selected = self.combo_box_ref.get()
             if selected in self.dict_ref:
@@ -404,12 +536,21 @@ class ToggleEditBox:
         self.is_editing = not self.is_editing
 
     def update_box(self, text=" "):
+        """
+        Update the contents of the text box.
+
+        Args:
+            text (str): New text to display in the text box.
+        """
         self.text_box.configure(state="normal")
         self.text_box.delete("1.0", "end")
         self.text_box.insert("1.0", str(text or "Click Edit to type"))
         self.text_box.configure(state="disabled")
 
     def save_edit(self):
+        """
+        Save edits to the corresponding JSON file after changes are made.
+        """
         tab_name = self.master_ref.master.get()
         with open(f"applicant data/{tab_name}.json", "w",
                   encoding="utf-8") as save_loc:

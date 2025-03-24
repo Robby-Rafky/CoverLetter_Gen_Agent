@@ -25,7 +25,19 @@ with open("config/api_config.json", "r", encoding="utf-8") as api_file:
 
 
 class CoverLetterAgent:
+    """
+    Agent to generate cover letters using a language model with available
+    tools.
+    """
     def __init__(self):
+        """
+        Initialize the agent, load environment variables, and set up LLM and
+        tools.
+
+        Loads the API key from environment variables and initializes the LLM
+        with the specified model and parameters. Sets up available tools and
+        configures the agent.
+        """
         load_dotenv(dotenv_path="config/.env")
 
         self.llm = ChatOpenAI(
@@ -46,6 +58,17 @@ class CoverLetterAgent:
         )
 
     def generate_cover_letter(self, job_posting):
+        """
+        Generate a cover letter based on the provided job posting.
+
+        Args:
+            job_posting (str): The job posting description used to generate
+                               the cover letter.
+
+        Returns:
+            str: The generated cover letter, or an error message if an
+                 exception occurs.
+        """
         prompt = f"{system_prompt}\nJob Posting: {job_posting}"
 
         try:
@@ -55,6 +78,16 @@ class CoverLetterAgent:
             self.parse_error(error_message=str(e))
 
     def parse_error(self, error_message) -> str:
+        """
+        Parse error messages and return a user-friendly error description.
+
+        Args:
+            error_message (str): The raw error message returned by the model.
+
+        Returns:
+            str: A user-friendly error message or a default error message if
+                 the error code is unknown.
+        """
         code = next((c for c in ERROR_MESSAGES if
                      f"Error code: {c}" in error_message), "Unknown Error")
         return ERROR_MESSAGES.get(
