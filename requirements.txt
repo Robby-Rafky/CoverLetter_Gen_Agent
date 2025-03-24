@@ -1,5 +1,6 @@
 langchain
-langchain-openai
+langchainhub
+langchain_openai
 together
 python-dotenv
 pydantic
