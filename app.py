@@ -5,7 +5,7 @@ import customtkinter as ctk
 from agent_methods import CoverLetterAgent
 
 
-with open("config.json", "r", encoding="utf-8") as config_file:
+with open("config/config.json", "r", encoding="utf-8") as config_file:
     config = json.load(config_file)
 
 cfg_main = config["Main"]
@@ -103,7 +103,6 @@ class CoverGenWindow(ctk.CTk):
     def display_response(self, response):
         self.after_cancel(self.dot_animation)
         self.gen_button.configure(text="Generate Response", state="normal")
-        self._show_response_window(response)
 
         if self.win_result is None or not self.win_result.winfo_exists():
             self.win_result = ctk.CTkToplevel(self)
@@ -368,7 +367,6 @@ class ToggleEditBox:
             self.update_box(text="Select or create a new entry.")
 
     def toggle_edit(self):
-        """Toggles between editing and saving job details."""
         if self.is_editing:
             selected = self.combo_box_ref.get()
             if selected in self.dict_ref:

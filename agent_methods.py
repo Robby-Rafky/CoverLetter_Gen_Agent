@@ -17,11 +17,11 @@ ERROR_MESSAGES = {
 
 
 class CoverLetterAgent:
-    def __init__(self, system_prompt_path="system_prompt.txt"):
-        """Initialize the LangChain agent and load API key & system prompt."""
-        load_dotenv()
+    def __init__(self):
+        load_dotenv(dotenv_path="config/.env")
 
-        self.system_prompt = self._load_system_prompt(system_prompt_path)
+        self.system_prompt = self._load_system_prompt(
+            "config/system_prompt.txt")
 
         self.llm = ChatOpenAI(
             model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
@@ -41,22 +41,19 @@ class CoverLetterAgent:
         )
 
     def _load_system_prompt(self, path) -> str:
-        """Load system prompt from file."""
         with open(path, "r", encoding="utf-8") as file:
             return file.read()
 
     def generate_cover_letter(self, job_posting):
-        """Generate a cover letter based on the provided job description."""
         prompt = f"{self.system_prompt}\nJob Posting: {job_posting}"
 
         try:
             response = self.agent.run(prompt)
             return response.strip()
         except Exception as e:
-            self.parse_error(error_message=e)
+            self.parse_error(error_message=str(e))
 
     def parse_error(self, error_message) -> str:
-        """Parse error message and return a user-friendly response."""
         code = next((c for c in ERROR_MESSAGES if
                      f"Error code: {c}" in error_message), None)
         return ERROR_MESSAGES.get(

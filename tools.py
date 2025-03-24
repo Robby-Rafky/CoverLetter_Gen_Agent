@@ -23,7 +23,6 @@ def get_hobbies() -> dict[str, None] | str:
 
 
 def read_applicant_data(file_name):
-    """Open JSON file and return dict and pop the first entry."""
     with open(f"applicant data/{file_name}.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -32,32 +31,34 @@ def read_applicant_data(file_name):
 
 
 def get_available_tools():
-    """Return a list of available tools."""
+    with open("config/tool_descriptions.json", "r", encoding="utf-8") as f:
+        desc = json.load(f)
+
     tools = [
         Tool(
             name="get_skills",
-            func=lambda _:  get_skills(),
-            description="Retrieve the applicant's skills"
+            func=lambda _: get_skills(),
+            description=desc["get_skills"]
         ),
         Tool(
             name="get_work_history",
             func=lambda _: get_work_history(),
-            description="Retrieve the applicant's work history"
+            description=desc["get_work_history"]
         ),
         Tool(
             name="get_education_awards",
             func=lambda _: get_education_awards(),
-            description="Retrieve applicant's education and awards"
+            description=desc["get_education_awards"]
         ),
         Tool(
             name="get_projects",
             func=lambda _: get_projects(),
-            description="Retrieve the applicant's projects"
+            description=desc["get_projects"]
         ),
         Tool(
             name="get_hobbies",
             func=lambda _: get_hobbies(),
-            description="Retrieve the applicant's hobbies and interests"
+            description=desc["get_hobbies"]
         )
     ]
     return tools
