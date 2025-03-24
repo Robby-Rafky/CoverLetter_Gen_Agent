@@ -1,0 +1,7 @@
+{
+    "get_skills": "Retrieve the applicant's skills. Format: dict with skill names as keys and null for values.",
+    "get_work_history": "Retrieve the applicant's work history. Format: dict of dicts containing company name, role tasks and the time spent working there.",
+    "get_education_awards": "Retrieve applicant's education and awards. Format: dict of dicts containing establishment and grading.",
+    "get_projects": "Retrieve the applicant's projects. Format: dict of dicts containing project descriptions, technologies used and challenges faced.",
+    "get_hobbies": "Retrieve the applicant's hobbies and interests. Format: dict with hobbies as keys and null for values."
+  }
