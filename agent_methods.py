@@ -1,4 +1,5 @@
 import os
+import json
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.agents import initialize_agent, AgentType
@@ -16,18 +17,22 @@ ERROR_MESSAGES = {
 }
 
 
+with open("config/system_prompt.txt", "r", encoding="utf-8") as sys_file:
+    system_prompt = sys_file.read()
+
+with open("config/api_config.json", "r", encoding="utf-8") as api_file:
+    api_config = json.load(api_file)
+
+
 class CoverLetterAgent:
     def __init__(self):
         load_dotenv(dotenv_path="config/.env")
 
-        self.system_prompt = self._load_system_prompt(
-            "config/system_prompt.txt")
-
         self.llm = ChatOpenAI(
-            model_name="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+            model_name=api_config["model"],
             temperature=0.7,
             max_tokens=500,
-            openai_api_base="https://api.together.xyz/v1",
+            openai_api_base=api_config["api_base"],
             openai_api_key=os.getenv("TOGETHER_API_KEY")
         )
 
@@ -40,12 +45,8 @@ class CoverLetterAgent:
             verbose=True,
         )
 
-    def _load_system_prompt(self, path) -> str:
-        with open(path, "r", encoding="utf-8") as file:
-            return file.read()
-
     def generate_cover_letter(self, job_posting):
-        prompt = f"{self.system_prompt}\nJob Posting: {job_posting}"
+        prompt = f"{system_prompt}\nJob Posting: {job_posting}"
 
         try:
             response = self.agent.run(prompt)
@@ -55,6 +56,6 @@ class CoverLetterAgent:
 
     def parse_error(self, error_message) -> str:
         code = next((c for c in ERROR_MESSAGES if
-                     f"Error code: {c}" in error_message), None)
+                     f"Error code: {c}" in error_message), "Unknown Error")
         return ERROR_MESSAGES.get(
             code, f"Error generating cover letter: {error_message}")

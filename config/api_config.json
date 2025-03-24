@@ -1,0 +1,4 @@
+{
+    "model" : "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+    "api_base" : "https://api.together.xyz/v1"
+}

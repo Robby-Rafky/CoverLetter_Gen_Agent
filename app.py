@@ -134,7 +134,7 @@ class CoverGenWindow(ctk.CTk):
                 text="Copy to Clipboard"
             )
 
-            self.window_text.insert("1.0", response)
+            self.window_text.insert("1.0", str(response))
 
             self.save_button.place(x=cfg_result["pos_x"],
                                    y=cfg_result["pos_y"])
@@ -147,7 +147,7 @@ class CoverGenWindow(ctk.CTk):
             )
         else:
             self.text_box.delete("1.0", "end")
-            self.window_text.insert("1.0", response)
+            self.window_text.insert("1.0", str(response))
             self.win_result.lift()
             self.win_result.focus_force()
 
