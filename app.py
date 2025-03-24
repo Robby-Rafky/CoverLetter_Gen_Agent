@@ -1,6 +1,9 @@
 import json
+import threading
 from tkinter import filedialog
 import customtkinter as ctk
+from agent_methods import CoverLetterAgent
+
 
 with open("config.json", "r", encoding="utf-8") as config_file:
     config = json.load(config_file)
@@ -14,19 +17,21 @@ cfg_edit = config["ToggleBoxButton"]
 cfg_clr = config["Colours"]
 
 data_files = [
-    "Education & Awards.json",
-    "Hobbies.json",
-    "Projects.json",
-    "Skills.json",
-    "Work History.json"
+    "Education & Awards",
+    "Hobbies",
+    "Projects",
+    "Skills",
+    "Work History"
 ]
 packed_data = []
 for f in data_files:
-    with open(f"applicant data./{f}", "r", encoding="utf-8") as file:
+    with open(f"applicant data/{f}.json", "r", encoding="utf-8") as file:
         packed_data.append(json.load(file))
 
 education_data, hobby_data, \
     project_data, skill_data, work_data = packed_data  # pylint: disable=W0632
+
+agent = CoverLetterAgent()
 
 
 class CoverGenWindow(ctk.CTk):
@@ -35,8 +40,8 @@ class CoverGenWindow(ctk.CTk):
 
         (
             self.win_result, self.window_text, self.save_button,
-            self.copy_button
-        ) = (None,) * 4
+            self.copy_button, self.dot_animation
+        ) = (None,) * 5
 
         self.title(cfg_main["title"])
         self.geometry(f"{cfg_main["size_x"]}x{cfg_main["size_y"]}")
@@ -60,7 +65,7 @@ class CoverGenWindow(ctk.CTk):
             master=self,
             width=cfg_tab["size_x"],
             text="Generate Response",
-            command=self.display_response,
+            command=self.generate_response,
             fg_color=cfg_clr["blue"],
             border_color=cfg_clr["dark_blue"],
             border_width=2,
@@ -74,37 +79,31 @@ class CoverGenWindow(ctk.CTk):
         self.tab_view.place(x=cfg_tab["pos_x"], y=cfg_tab["pos_y"])
         self.input_box.place(x=cfg_tab["pos_x"], y=cfg_tab["pos_x"])
 
-    def display_response(self):
-        # TODO: link response to agent response + setup agent
-        response = """Dear [Hiring Manager's Name],
+    def generate_response(self):
+        job_posting = self.input_box.get("1.0", "end").strip()
 
-I am writing to express my interest in the [Job Title] position at [Company
- Name]. With a Master's degree in Artificial Intelligence and hands-on
- experience in machine learning, data science, and software development,
- I am confident in my ability to contribute effectively to your team
+        self.animate_dots(0)
+        self.gen_button.configure(state="disabled")
 
- During my time at the University of Surrey, I worked on various projects
- including
+        threading.Thread(target=self._generate_response_thread,
+                         args=(job_posting,)).start()
 
- Developing a 3D object detection system for LiDAR point clouds as part o
- my Master's thesis
- Implementing NLP models for sentiment analysis and market predictions
- Designing AI-driven systems, such as a custom cover letter generator and
- AI-powered CV enhancement tools
- I am highly motivated to apply my technical expertise and problem-solving
- abilities to [Company Name], where I can further develop my skills whil
- contributing to impactful projects. I am particularly drawn to your
- organization because of [mention something specific about the compan
- or its projects that interests you]
+    def _generate_response_thread(self, job_posting):
+        response = agent.generate_cover_letter(job_posting)
+        self.after(0, self.display_response, response)
 
- I am eager to discuss how my background aligns with the requirements of
- this position. Thank you for your time and consideration. I look forward
- to the possibility of contributing to your team.
+    def animate_dots(self, step):
+        line_frames = ["|", "/", "—", "\\"]
+        self.gen_button.configure(
+            text=f" {line_frames[step]} Generating {line_frames[step]}")
 
-Best regards,
-[Your Name]"""
+        next_step = (step + 1) % 4
+        self.dot_animation = self.after(100, self.animate_dots, next_step)
 
-        # TODO: Visualise waiting on generate button for the response.
+    def display_response(self, response):
+        self.after_cancel(self.dot_animation)
+        self.gen_button.configure(text="Generate Response", state="normal")
+        self._show_response_window(response)
 
         if self.win_result is None or not self.win_result.winfo_exists():
             self.win_result = ctk.CTkToplevel(self)
@@ -148,6 +147,8 @@ Best regards,
                 y=cfg_result["pos_y"]
             )
         else:
+            self.text_box.delete("1.0", "end")
+            self.window_text.insert("1.0", response)
             self.win_result.lift()
             self.win_result.focus_force()
 
